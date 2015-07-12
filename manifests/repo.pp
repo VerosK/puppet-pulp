@@ -7,9 +7,10 @@ class pulp::repo (
     yumrepo {'rhel-pulp':
       name     => 'pulp-v2-stable',
       descr    => 'Pulp Community Releases',
-      baseurl  => 'http://repos.fedorapeople.org/repos/pulp/pulp/v2/stable/6Server/$basearch/',
+      baseurl  => 'http://repos.fedorapeople.org/repos/pulp/pulp/v2/stable/$releasever/$basearch/',
       enabled  => '1',
-      gpgcheck => '0',
+      gpgcheck => '1',
+      gpgkey   => 'https://repos.fedorapeople.org/repos/pulp/pulp/GPG-RPM-KEY-pulp-2',
     }
   }
 }
