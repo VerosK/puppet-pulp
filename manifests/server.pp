@@ -63,13 +63,15 @@ class pulp::server (
   $pulp_server_host  = 'localhost.localdomain',
   $migrate_attempts  = '3',
   $migrate_wait_secs = '5',
-  $package_version   = 'installed'
+  $package_version   = 'installed',
+  $enabled           =  true,
 ) {
   $packagelist = ['pulp-puppet-plugins', 'pulp-rpm-plugins', 'pulp-selinux', 'pulp-server']
 
 
   package { $packagelist:
     ensure => $package_version,
+    before =>  Exec['manage_pulp_databases'],
   }
   file { '/etc/pulp/server.conf':
     owner   => 'root',
@@ -90,7 +92,7 @@ class pulp::server (
     enable => $enabled,
   }
 
-  service { ['pulp_celerybeat','pulp_resource_manager']:
+  service { ['pulp_celerybeat','pulp_resource_manager','pulp_workers']:
     ensure  => 'running',
     enable  => $enabled,
     require =>  Exec['manage_pulp_databases'],
@@ -106,8 +108,9 @@ class pulp::server (
     refreshonly => true,
     creates     => '/var/lib/pulp/.inited',
     notify      => Service['httpd'],
-    require     => [ Package['pulp-server'], Service['mongod']],
     tries       => $migrate_attempts,
     try_sleep   => $migrate_wait_secs,
+
+    require     => [ Service['mongod'] ],
   }
 }
