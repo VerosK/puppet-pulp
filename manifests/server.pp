@@ -67,6 +67,7 @@ class pulp::server (
 ) {
   $packagelist = ['pulp-puppet-plugins', 'pulp-rpm-plugins', 'pulp-selinux', 'pulp-server']
 
+
   package { $packagelist:
     ensure => $package_version,
   }
@@ -86,14 +87,22 @@ class pulp::server (
   }
   service { 'qpidd':
     ensure => 'running',
-    enable => $eanbled,
+    enable => $enabled,
   }
+
+  service { ['pulp_celerybeat','pulp_resource_manager']:
+    ensure  => 'running',
+    enable  => $enabled,
+    require =>  Exec['manage_pulp_databases'],
+  }
+
   file { '/var/lib/pulp/init.flag':
     ensure  => 'file',
     notify  => Exec['manage_pulp_databases']
   }
   exec { 'manage_pulp_databases':
-    command     => '/usr/bin/pulp-manage-db ',
+    command     => '/usr/bin/pulp-manage-db',
+    user        => 'apache',
     refreshonly => true,
     creates     => '/var/lib/pulp/.inited',
     notify      => Service['httpd'],
